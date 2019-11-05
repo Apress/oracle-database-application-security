@@ -1,0 +1,64 @@
+$java –jar fmw_12.2.1.3.0_infrastructure.jar
+
+
+cd $MW_HOME/oracle_common/common/bin
+./config.sh
+
+java -version
+
+Linux/Unix: - export JAVA_HOME=/u01/app/jdk1.8.0_131
+Windows: - set JAVA_HOME=c:\jdk1.8.0_131
+
+cd $ORACLE_HOME/oracle_common/bin
+Linux/Unix: - ./rcu
+Windows: - rcu.bat
+
+
+cd $ORACLE_HOME/oracle_common/common/bin
+./config.sh
+
+To start Node Manage: -
+Linux/Unix DOMAIN_HOME/bin/startNodeManager.sh
+Windows DOMAIN_HOME\bin\startNodeManager.cmd
+
+To start the Administration Server: -
+Linux/Unix DOMAIN_HOME/bin/startWebLogic.sh
+Windows DOMAIN_HOME\bin\startWebLogic.cmd
+
+Start the Managed Servers
+
+Linux/Unix DOMAIN_HOME/bin/ startManageWebLogic.sh managed_server_name
+Windows DOMAIN_HOME\bin\ startManageWebLogic.cmd managed_server_name
+
+
+ORACLE_HOME/oracle_common/common/bin
+./wlst.sh
+nmConnect(username='weblogic_user’, password='password',domainName='base_domain')
+oid_setup(orcladminPassword='password',odsPassword='password',realmDN='dc=us,dc=oracle,dc=com')
+
+
+ORACLE_HOME/bin/ldapbind -h OID_HOST -p OID_PORT
+
+
+a)Open the java.security file located at JAVA_HOME/jre/lib/security/ in editor.
+b)Remove TLSv1, TLSv1.1, MD5withRSA from the following key:
+key - jdk.tls.disabledAlgorithms
+c)Remove MD5 from the following key:
+key - jdk.certpath.disabledAlgorithms
+
+
+kinit wlsclient 
+ktpass -princ HTTP/SLKRBTRN6-03@ TESTDOMAIN.LOCALDOMAIN.COM -mapuser wlsclient -pass oracle123 -crypto all -kvno 0 -ptype KRB5_NT_PRINCIPAL -out test.keytab
+klist -e -k test.keytab
+
+Add the following lines to StartWebloic.cmd 
+
+set JAVA_OPTIONS=%JAVA_OPTIONS% -Djava.security.auth.login.config=krb5Login.conf –Djavax.security.auth.useSubjectCredsOnly=false –Dweblogic.security.enableNegotiate=true -Dsun.security.krb5.debug=true
+
+
+txkrun.pl -script=SetOAMReg -registeroam=yes
+txkrun.pl -script=SetOAMReg -installWebgate=yes -webgatestagedir=<webgate stage directory>
+perl $AD_TOP/patch/115/bin/adProvisionEBS.pl ebs-create-oaea_resources \ -contextfile=$CONTEXT_FILE \ -deployApps=accessgate \ -SSOServerURL=<OAM Server URL> \ [-managedsrvname=<managed server name>] \ [-managedsrvport=<managed server 'Listen Port'>] \ -logfile=<logfile>
+txkrun.pl -script=SetOAMReg -registeroam=yes
+
+
